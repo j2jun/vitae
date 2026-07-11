@@ -1,3 +1,9 @@
+import WeatherCheckup from "@/components/WeatherCheckup";
+
 export default function Home() {
-  return <main>vitae</main>;
+  return (
+    <main>
+      <WeatherCheckup />
+    </main>
+  );
 }
