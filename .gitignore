@@ -2,3 +2,6 @@ node_modules/
 .next/
 .env*.local
 .claude/settings.local*.json
+
+# clerk configuration (can include secrets)
+/.clerk/

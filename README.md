@@ -8,6 +8,7 @@ AI daily-checkup platform — auto-detects location and time, then surfaces weat
 - Anthropic API (`@anthropic-ai/sdk`) for the AI-generated daily briefing
 - Apple WeatherKit for current conditions, forecast, and severe weather alerts
 - OpenStreetMap Nominatim for reverse geocoding (lat/lon → country code, for WeatherKit's alert scoping)
+- Clerk for auth
 
 ## Setup
 
@@ -24,6 +25,8 @@ npm run dev
 2. Create a WeatherKit key and download its `.p8` private key.
 3. Fill in `APPLE_WEATHERKIT_TEAM_ID`, `APPLE_WEATHERKIT_SERVICE_ID`, `APPLE_WEATHERKIT_KEY_ID`, and paste the `.p8` contents into `APPLE_WEATHERKIT_PRIVATE_KEY`.
 
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` — sign up at clerk.com and copy from an application's API Keys page. Not required for local dev: Clerk runs in "keyless mode" without them and prints a one-click link in the terminal to claim real keys when you're ready.
+
 ## Endpoints
 
 | Route | Status | Notes |
@@ -33,11 +36,11 @@ npm run dev
 | `/api/news` | planned | |
 | `/api/stocks` | planned | |
 | `/api/traffic` | planned | |
-| `/api/calendar` | planned | Reads an ICS feed URL (Google/Apple/Outlook calendar export). |
-| `/api/todos` | planned | CRUD against the user's to-do list. |
+| `/api/calendar` | planned | Reads an ICS feed URL (Google/Apple/Outlook calendar export). Needs a per-user place to save the feed URL. |
+| `/api/todos` | planned | CRUD against the user's to-do list. Needs a database (not set up yet — Clerk handles identity, not app data). |
 
 ## Notes
 
 - Location + local time are read client-side via the browser Geolocation API and `Intl.DateTimeFormat` — no IP-geolocation service needed unless permission is denied.
-- Weather alert notifications are in-app only for now (`components/WeatherCheckup.tsx` diffs alerts against ones already seen, stored in `localStorage`). Push notifications while the app isn't open need real accounts first — see roadmap.
-- Auth and per-user storage aren't built yet; planned via an existing provider (Clerk/Auth.js) rather than hand-rolled.
+- Weather alert notifications are in-app only for now (`components/WeatherCheckup.tsx` diffs alerts against ones already seen, stored in `localStorage`). Real push notifications (while the app isn't open) are next now that accounts exist — need a `push_subscriptions` table + a service worker, which will land with that module rather than being scaffolded early.
+- Auth is Clerk (`proxy.ts` + `<ClerkProvider>` in `app/layout.tsx`). No per-user database yet — `auth()` from `@clerk/nextjs/server` gives a `userId` that future modules (todos, calendar, push) can key their own tables on directly, no separate `users` table needed.
