@@ -5,7 +5,6 @@ export interface CalendarEvent {
   summary: string;
   location?: string;
   start: string;
-  end: string;
   isFullDay: boolean;
 }
 
@@ -40,7 +39,6 @@ export async function fetchUpcomingEvents(
         summary: toText(instance.summary) ?? "(untitled event)",
         location: toText(component.location),
         start: instance.start.toISOString(),
-        end: instance.end.toISOString(),
         isFullDay: instance.isFullDay,
       });
     }

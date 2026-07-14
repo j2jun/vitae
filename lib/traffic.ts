@@ -1,7 +1,6 @@
 export interface CommuteEta {
   travelTimeSeconds: number;
   delaySeconds: number;
-  lengthMeters: number;
 }
 
 export async function fetchCommuteEta(
@@ -33,6 +32,5 @@ export async function fetchCommuteEta(
   return {
     travelTimeSeconds: summary.travelTimeInSeconds,
     delaySeconds: summary.trafficDelayInSeconds ?? 0,
-    lengthMeters: summary.lengthInMeters,
   };
 }

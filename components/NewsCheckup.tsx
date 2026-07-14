@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 interface NewsItem {
   title: string;
   link: string;
-  publishedAt?: string;
 }
 
 interface NewsResponse {

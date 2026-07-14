@@ -11,6 +11,8 @@ interface Quote {
   error?: string;
 }
 
+const signedNumber = new Intl.NumberFormat(undefined, { signDisplay: "exceptZero" });
+
 export default function StockWatchlist() {
   const [quotes, setQuotes] = useState<Quote[] | null>(null);
   const [symbol, setSymbol] = useState("");
@@ -64,7 +66,7 @@ export default function StockWatchlist() {
             {q.symbol}{" "}
             {q.error
               ? q.error
-              : `${q.price} (${(q.change ?? 0) >= 0 ? "+" : ""}${q.change} / ${(q.changePercent ?? 0) >= 0 ? "+" : ""}${q.changePercent}%)`}
+              : `${q.price} (${signedNumber.format(q.change ?? 0)} / ${signedNumber.format(q.changePercent ?? 0)}%)`}
             <button onClick={() => removeSymbol(q.id)}>Remove</button>
           </li>
         ))}
