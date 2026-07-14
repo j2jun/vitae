@@ -9,6 +9,8 @@ AI daily-checkup platform — auto-detects location and time, then surfaces weat
 - Apple WeatherKit for current conditions, forecast, and severe weather alerts
 - OpenStreetMap Nominatim for reverse geocoding (lat/lon → country code, for WeatherKit's alert scoping)
 - Clerk for auth
+- Postgres (`postgres` client, no ORM yet — one table so far) for per-user data
+- Web Push (VAPID, browser-native — no third-party push vendor) for alert notifications
 
 ## Setup
 
@@ -27,20 +29,29 @@ npm run dev
 
 `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` — sign up at clerk.com and copy from an application's API Keys page. Not required for local dev: Clerk runs in "keyless mode" without them and prints a one-click link in the terminal to claim real keys when you're ready.
 
+`DATABASE_URL` — any Postgres works; Neon (neon.tech) has a no-server-management free tier. Once set, run `db/schema.sql` against it (e.g. `psql $DATABASE_URL -f db/schema.sql`).
+
+`NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` — generate your own with `npx web-push generate-vapid-keys`, no external account needed. Also set `VAPID_SUBJECT` to a `mailto:` address.
+
+`CRON_SECRET` — any random string. Vercel Cron automatically sends it as `Authorization: Bearer <value>` to `/api/cron/check-alerts` on the schedule in `vercel.json`; on another host, point your own scheduler at that route with the same header.
+
 ## Endpoints
 
 | Route | Status | Notes |
 |---|---|---|
 | `POST /api/briefing` | done | Turns fetched module data (weather, news, stocks, etc.) into a short natural-language summary via Claude. |
 | `GET /api/weather` | done | `?lat=&lon=&timezone=` → current conditions, forecast, and active severe weather alerts (heat, storm, winter/ice, tornado/hurricane, fire) via WeatherKit. |
+| `POST /api/push/subscribe` | done | Saves a browser's push subscription + location, signed-in only. `DELETE` removes it. |
+| `GET /api/cron/check-alerts` | done | Cron-only (checked via `CRON_SECRET`). Re-checks every saved location and pushes any alert it hasn't sent before; drops subscriptions the push service reports as gone. |
 | `/api/news` | planned | |
 | `/api/stocks` | planned | |
 | `/api/traffic` | planned | |
 | `/api/calendar` | planned | Reads an ICS feed URL (Google/Apple/Outlook calendar export). Needs a per-user place to save the feed URL. |
-| `/api/todos` | planned | CRUD against the user's to-do list. Needs a database (not set up yet — Clerk handles identity, not app data). |
+| `/api/todos` | planned | CRUD against the user's to-do list. |
 
 ## Notes
 
 - Location + local time are read client-side via the browser Geolocation API and `Intl.DateTimeFormat` — no IP-geolocation service needed unless permission is denied.
-- Weather alert notifications are in-app only for now (`components/WeatherCheckup.tsx` diffs alerts against ones already seen, stored in `localStorage`). Real push notifications (while the app isn't open) are next now that accounts exist — need a `push_subscriptions` table + a service worker, which will land with that module rather than being scaffolded early.
-- Auth is Clerk (`proxy.ts` + `<ClerkProvider>` in `app/layout.tsx`). No per-user database yet — `auth()` from `@clerk/nextjs/server` gives a `userId` that future modules (todos, calendar, push) can key their own tables on directly, no separate `users` table needed.
+- Weather alerts now have two independent channels: an in-app banner (`components/WeatherCheckup.tsx`, dedup via `localStorage`) and real push (`components/PushSubscribe.tsx` + `public/sw.js`, dedup via the `notified_alert_ids` column). Each tracks "already seen" separately — fine for v1, no need to unify them.
+- Auth is Clerk (`proxy.ts` + `<ClerkProvider>` in `app/layout.tsx`). `auth()` from `@clerk/nextjs/server` gives a `userId` that per-user tables key on directly — no separate `users` table.
+- First database table (`push_subscriptions`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.
