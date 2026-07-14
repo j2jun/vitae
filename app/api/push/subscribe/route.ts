@@ -59,6 +59,10 @@ export async function DELETE(req: Request) {
     return Response.json({ error: "endpoint is required" }, { status: 400 });
   }
 
-  await sql`DELETE FROM push_subscriptions WHERE endpoint = ${endpoint} AND user_id = ${userId}`;
-  return Response.json({ ok: true });
+  try {
+    await sql`DELETE FROM push_subscriptions WHERE endpoint = ${endpoint} AND user_id = ${userId}`;
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ error: "unsubscribe failed" }, { status: 502 });
+  }
 }

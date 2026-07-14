@@ -8,15 +8,15 @@ export async function GET() {
     return Response.json({ error: "sign in required" }, { status: 401 });
   }
 
-  const [feed] = await sql`
-    SELECT feed_url FROM calendar_feeds WHERE user_id = ${userId}
-  `;
-
-  if (!feed) {
-    return Response.json({ feedUrl: null, events: [] });
-  }
-
   try {
+    const [feed] = await sql`
+      SELECT feed_url FROM calendar_feeds WHERE user_id = ${userId}
+    `;
+
+    if (!feed) {
+      return Response.json({ feedUrl: null, events: [] });
+    }
+
     const events = await fetchUpcomingEvents(feed.feed_url);
     return Response.json({ feedUrl: feed.feed_url, events });
   } catch {
@@ -35,13 +35,16 @@ export async function POST(req: Request) {
     return Response.json({ error: "feedUrl must be an http(s) URL" }, { status: 400 });
   }
 
-  await sql`
-    INSERT INTO calendar_feeds (user_id, feed_url)
-    VALUES (${userId}, ${feedUrl})
-    ON CONFLICT (user_id) DO UPDATE SET feed_url = EXCLUDED.feed_url
-  `;
-
-  return Response.json({ ok: true });
+  try {
+    await sql`
+      INSERT INTO calendar_feeds (user_id, feed_url)
+      VALUES (${userId}, ${feedUrl})
+      ON CONFLICT (user_id) DO UPDATE SET feed_url = EXCLUDED.feed_url
+    `;
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ error: "couldn't save that feed URL" }, { status: 502 });
+  }
 }
 
 export async function DELETE() {
@@ -50,6 +53,10 @@ export async function DELETE() {
     return Response.json({ error: "sign in required" }, { status: 401 });
   }
 
-  await sql`DELETE FROM calendar_feeds WHERE user_id = ${userId}`;
-  return Response.json({ ok: true });
+  try {
+    await sql`DELETE FROM calendar_feeds WHERE user_id = ${userId}`;
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ error: "couldn't remove that feed" }, { status: 502 });
+  }
 }

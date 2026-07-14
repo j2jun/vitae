@@ -9,16 +9,16 @@ export async function GET() {
     return Response.json({ error: "sign in required" }, { status: 401 });
   }
 
-  const [commute] = await sql`
-    SELECT origin_label, origin_lat, origin_lon, dest_label, dest_lat, dest_lon
-    FROM commutes WHERE user_id = ${userId}
-  `;
-
-  if (!commute) {
-    return Response.json({ commute: null, eta: null });
-  }
-
   try {
+    const [commute] = await sql`
+      SELECT origin_label, origin_lat, origin_lon, dest_label, dest_lat, dest_lon
+      FROM commutes WHERE user_id = ${userId}
+    `;
+
+    if (!commute) {
+      return Response.json({ commute: null, eta: null });
+    }
+
     const eta = await fetchCommuteEta(
       commute.origin_lat,
       commute.origin_lon,
@@ -83,6 +83,10 @@ export async function DELETE() {
     return Response.json({ error: "sign in required" }, { status: 401 });
   }
 
-  await sql`DELETE FROM commutes WHERE user_id = ${userId}`;
-  return Response.json({ ok: true });
+  try {
+    await sql`DELETE FROM commutes WHERE user_id = ${userId}`;
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ error: "couldn't remove that commute" }, { status: 502 });
+  }
 }

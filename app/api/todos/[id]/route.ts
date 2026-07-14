@@ -16,18 +16,22 @@ export async function PATCH(
     return Response.json({ error: "text or done is required" }, { status: 400 });
   }
 
-  const [todo] = await sql`
-    UPDATE todos SET
-      text = COALESCE(${text ?? null}, text),
-      done = COALESCE(${done ?? null}, done)
-    WHERE id = ${id} AND user_id = ${userId}
-    RETURNING id, text, done
-  `;
+  try {
+    const [todo] = await sql`
+      UPDATE todos SET
+        text = COALESCE(${text ?? null}, text),
+        done = COALESCE(${done ?? null}, done)
+      WHERE id = ${id} AND user_id = ${userId}
+      RETURNING id, text, done
+    `;
 
-  if (!todo) {
-    return Response.json({ error: "not found" }, { status: 404 });
+    if (!todo) {
+      return Response.json({ error: "not found" }, { status: 404 });
+    }
+    return Response.json({ todo });
+  } catch {
+    return Response.json({ error: "couldn't update that to-do" }, { status: 502 });
   }
-  return Response.json({ todo });
 }
 
 export async function DELETE(
@@ -40,6 +44,10 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  await sql`DELETE FROM todos WHERE id = ${id} AND user_id = ${userId}`;
-  return Response.json({ ok: true });
+  try {
+    await sql`DELETE FROM todos WHERE id = ${id} AND user_id = ${userId}`;
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ error: "couldn't delete that to-do" }, { status: 502 });
+  }
 }

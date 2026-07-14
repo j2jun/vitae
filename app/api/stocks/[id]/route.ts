@@ -11,6 +11,10 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  await sql`DELETE FROM stock_watchlist WHERE id = ${id} AND user_id = ${userId}`;
-  return Response.json({ ok: true });
+  try {
+    await sql`DELETE FROM stock_watchlist WHERE id = ${id} AND user_id = ${userId}`;
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ error: "couldn't remove that symbol" }, { status: 502 });
+  }
 }
