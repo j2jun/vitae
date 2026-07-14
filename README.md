@@ -11,6 +11,7 @@ AI daily-checkup platform — auto-detects location and time, then surfaces weat
 - Clerk for auth
 - Postgres (`postgres` client, no ORM yet — one table so far) for per-user data
 - Web Push (VAPID, browser-native — no third-party push vendor) for alert notifications
+- `node-ical` for reading the user's calendar feed, including recurring-event (RRULE) expansion
 
 ## Setup
 
@@ -43,10 +44,11 @@ npm run dev
 | `GET /api/weather` | done | `?lat=&lon=&timezone=` → current conditions, forecast, and active severe weather alerts (heat, storm, winter/ice, tornado/hurricane, fire) via WeatherKit. |
 | `POST /api/push/subscribe` | done | Saves a browser's push subscription + location, signed-in only. `DELETE` removes it. |
 | `GET /api/cron/check-alerts` | done | Cron-only (checked via `CRON_SECRET`). Re-checks every saved location and pushes any alert it hasn't sent before; drops subscriptions the push service reports as gone. |
+| `GET /api/calendar` | done | Signed-in only. Fetches the user's saved ICS feed URL, returns events (recurring events expanded) in the next 14 days. |
+| `POST /api/calendar` | done | Saves/updates the user's ICS feed URL (Google/Apple/Outlook calendar export), signed-in only. `DELETE` removes it. |
 | `/api/news` | planned | |
 | `/api/stocks` | planned | |
 | `/api/traffic` | planned | |
-| `/api/calendar` | planned | Reads an ICS feed URL (Google/Apple/Outlook calendar export). Needs a per-user place to save the feed URL. |
 | `/api/todos` | planned | CRUD against the user's to-do list. |
 
 ## Notes
@@ -54,4 +56,4 @@ npm run dev
 - Location + local time are read client-side via the browser Geolocation API and `Intl.DateTimeFormat` — no IP-geolocation service needed unless permission is denied.
 - Weather alerts now have two independent channels: an in-app banner (`components/WeatherCheckup.tsx`, dedup via `localStorage`) and real push (`components/PushSubscribe.tsx` + `public/sw.js`, dedup via the `notified_alert_ids` column). Each tracks "already seen" separately — fine for v1, no need to unify them.
 - Auth is Clerk (`proxy.ts` + `<ClerkProvider>` in `app/layout.tsx`). `auth()` from `@clerk/nextjs/server` gives a `userId` that per-user tables key on directly — no separate `users` table.
-- First database table (`push_subscriptions`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.
+- Two tables so far (`push_subscriptions`, `calendar_feeds`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.

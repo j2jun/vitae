@@ -1,3 +1,9 @@
+CREATE TABLE IF NOT EXISTS calendar_feeds (
+  user_id TEXT PRIMARY KEY,
+  feed_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS push_subscriptions (
   id SERIAL PRIMARY KEY,
   user_id TEXT NOT NULL,
