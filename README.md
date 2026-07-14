@@ -14,6 +14,7 @@ AI daily-checkup platform — auto-detects location and time, then surfaces weat
 - `node-ical` for reading the user's calendar feed, including recurring-event (RRULE) expansion
 - `rss-parser` for reading the user's news feed (any RSS/Atom URL — no news API account needed)
 - TomTom Routing API for traffic-aware commute ETAs (with OpenStreetMap Nominatim forward geocoding to resolve the saved addresses to lat/lon)
+- Finnhub for stock quotes on the user's watchlist
 
 ## Setup
 
@@ -40,6 +41,8 @@ npm run dev
 
 `TOMTOM_API_KEY` — free tier, sign up at developer.tomtom.com (no credit card required) and copy the key from your app's dashboard.
 
+`FINNHUB_API_KEY` — free tier, sign up at finnhub.io (no credit card required) and copy the key from your dashboard.
+
 ## Endpoints
 
 | Route | Status | Notes |
@@ -56,11 +59,12 @@ npm run dev
 | `POST /api/news` | done | Saves/updates the user's news feed URL, signed-in only. `DELETE` removes it. |
 | `GET /api/traffic` | done | Signed-in only. Fetches the user's saved commute (origin/destination) and returns the live traffic-aware ETA plus delay vs. free-flow via TomTom. |
 | `POST /api/traffic` | done | Saves/updates the user's commute from two address strings (forward-geocoded via Nominatim), signed-in only. `DELETE` removes it. |
-| `/api/stocks` | planned | |
+| `GET /api/stocks` | done | Signed-in only. Fetches quotes (price, change, % change) for every symbol on the user's watchlist via Finnhub. |
+| `POST /api/stocks` | done | Adds a ticker symbol to the user's watchlist, signed-in only. `DELETE /api/stocks/[id]` removes one. |
 
 ## Notes
 
 - Location + local time are read client-side via the browser Geolocation API and `Intl.DateTimeFormat` — no IP-geolocation service needed unless permission is denied.
 - Weather alerts now have two independent channels: an in-app banner (`components/WeatherCheckup.tsx`, dedup via `localStorage`) and real push (`components/PushSubscribe.tsx` + `public/sw.js`, dedup via the `notified_alert_ids` column). Each tracks "already seen" separately — fine for v1, no need to unify them.
 - Auth is Clerk (`proxy.ts` + `<ClerkProvider>` in `app/layout.tsx`). `auth()` from `@clerk/nextjs/server` gives a `userId` that per-user tables key on directly — no separate `users` table.
-- Five tables so far (`push_subscriptions`, `calendar_feeds`, `todos`, `news_feeds`, `commutes`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.
+- Six tables so far (`push_subscriptions`, `calendar_feeds`, `todos`, `news_feeds`, `commutes`, `stock_watchlist`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.
