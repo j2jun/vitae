@@ -13,6 +13,7 @@ AI daily-checkup platform — auto-detects location and time, then surfaces weat
 - Web Push (VAPID, browser-native — no third-party push vendor) for alert notifications
 - `node-ical` for reading the user's calendar feed, including recurring-event (RRULE) expansion
 - `rss-parser` for reading the user's news feed (any RSS/Atom URL — no news API account needed)
+- TomTom Routing API for traffic-aware commute ETAs (with OpenStreetMap Nominatim forward geocoding to resolve the saved addresses to lat/lon)
 
 ## Setup
 
@@ -37,6 +38,8 @@ npm run dev
 
 `CRON_SECRET` — any random string. Vercel Cron automatically sends it as `Authorization: Bearer <value>` to `/api/cron/check-alerts` on the schedule in `vercel.json`; on another host, point your own scheduler at that route with the same header.
 
+`TOMTOM_API_KEY` — free tier, sign up at developer.tomtom.com (no credit card required) and copy the key from your app's dashboard.
+
 ## Endpoints
 
 | Route | Status | Notes |
@@ -51,12 +54,13 @@ npm run dev
 | `PATCH /api/todos/[id]` | done | Updates `text` and/or `done` on a to-do, scoped to the signed-in user. `DELETE` removes it. |
 | `GET /api/news` | done | Signed-in only. Fetches the user's saved RSS/Atom feed URL, returns the latest 10 headlines. |
 | `POST /api/news` | done | Saves/updates the user's news feed URL, signed-in only. `DELETE` removes it. |
+| `GET /api/traffic` | done | Signed-in only. Fetches the user's saved commute (origin/destination) and returns the live traffic-aware ETA plus delay vs. free-flow via TomTom. |
+| `POST /api/traffic` | done | Saves/updates the user's commute from two address strings (forward-geocoded via Nominatim), signed-in only. `DELETE` removes it. |
 | `/api/stocks` | planned | |
-| `/api/traffic` | planned | |
 
 ## Notes
 
 - Location + local time are read client-side via the browser Geolocation API and `Intl.DateTimeFormat` — no IP-geolocation service needed unless permission is denied.
 - Weather alerts now have two independent channels: an in-app banner (`components/WeatherCheckup.tsx`, dedup via `localStorage`) and real push (`components/PushSubscribe.tsx` + `public/sw.js`, dedup via the `notified_alert_ids` column). Each tracks "already seen" separately — fine for v1, no need to unify them.
 - Auth is Clerk (`proxy.ts` + `<ClerkProvider>` in `app/layout.tsx`). `auth()` from `@clerk/nextjs/server` gives a `userId` that per-user tables key on directly — no separate `users` table.
-- Four tables so far (`push_subscriptions`, `calendar_feeds`, `todos`, `news_feeds`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.
+- Five tables so far (`push_subscriptions`, `calendar_feeds`, `todos`, `news_feeds`, `commutes`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.

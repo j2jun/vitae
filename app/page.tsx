@@ -4,6 +4,7 @@ import PushSubscribe from "@/components/PushSubscribe";
 import CalendarCheckup from "@/components/CalendarCheckup";
 import TodoList from "@/components/TodoList";
 import NewsCheckup from "@/components/NewsCheckup";
+import TrafficCheckup from "@/components/TrafficCheckup";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
         <CalendarCheckup />
         <TodoList />
         <NewsCheckup />
+        <TrafficCheckup />
       </Show>
     </main>
   );

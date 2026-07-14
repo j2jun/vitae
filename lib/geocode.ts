@@ -33,3 +33,32 @@ export async function reverseGeocode(
     city: data.address?.city ?? data.address?.town ?? data.address?.village,
   };
 }
+
+export interface GeocodedPoint {
+  lat: number;
+  lon: number;
+}
+
+// Forward geocode (address text -> lat/lon), same Nominatim host as
+// reverseGeocode above.
+export async function forwardGeocode(query: string): Promise<GeocodedPoint> {
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("q", query);
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("limit", "1");
+
+  const res = await fetch(url, {
+    headers: { "User-Agent": "vitae-daily-checkup (github.com/j2jun/vitae)" },
+  });
+
+  if (!res.ok) {
+    throw new Error(`geocoding failed: ${res.status}`);
+  }
+
+  const [result] = await res.json();
+  if (!result) {
+    throw new Error(`couldn't find a location for "${query}"`);
+  }
+
+  return { lat: Number(result.lat), lon: Number(result.lon) };
+}
