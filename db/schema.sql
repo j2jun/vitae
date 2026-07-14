@@ -4,6 +4,14 @@ CREATE TABLE IF NOT EXISTS calendar_feeds (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS todos (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  text TEXT NOT NULL,
+  done BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS push_subscriptions (
   id SERIAL PRIMARY KEY,
   user_id TEXT NOT NULL,
