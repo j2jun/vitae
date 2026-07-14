@@ -12,6 +12,7 @@ AI daily-checkup platform — auto-detects location and time, then surfaces weat
 - Postgres (`postgres` client, no ORM yet — one table so far) for per-user data
 - Web Push (VAPID, browser-native — no third-party push vendor) for alert notifications
 - `node-ical` for reading the user's calendar feed, including recurring-event (RRULE) expansion
+- `rss-parser` for reading the user's news feed (any RSS/Atom URL — no news API account needed)
 
 ## Setup
 
@@ -48,7 +49,8 @@ npm run dev
 | `POST /api/calendar` | done | Saves/updates the user's ICS feed URL (Google/Apple/Outlook calendar export), signed-in only. `DELETE` removes it. |
 | `GET /api/todos` | done | Lists the signed-in user's to-dos. `POST` adds one. |
 | `PATCH /api/todos/[id]` | done | Updates `text` and/or `done` on a to-do, scoped to the signed-in user. `DELETE` removes it. |
-| `/api/news` | planned | |
+| `GET /api/news` | done | Signed-in only. Fetches the user's saved RSS/Atom feed URL, returns the latest 10 headlines. |
+| `POST /api/news` | done | Saves/updates the user's news feed URL, signed-in only. `DELETE` removes it. |
 | `/api/stocks` | planned | |
 | `/api/traffic` | planned | |
 
@@ -57,4 +59,4 @@ npm run dev
 - Location + local time are read client-side via the browser Geolocation API and `Intl.DateTimeFormat` — no IP-geolocation service needed unless permission is denied.
 - Weather alerts now have two independent channels: an in-app banner (`components/WeatherCheckup.tsx`, dedup via `localStorage`) and real push (`components/PushSubscribe.tsx` + `public/sw.js`, dedup via the `notified_alert_ids` column). Each tracks "already seen" separately — fine for v1, no need to unify them.
 - Auth is Clerk (`proxy.ts` + `<ClerkProvider>` in `app/layout.tsx`). `auth()` from `@clerk/nextjs/server` gives a `userId` that per-user tables key on directly — no separate `users` table.
-- Three tables so far (`push_subscriptions`, `calendar_feeds`, `todos`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.
+- Four tables so far (`push_subscriptions`, `calendar_feeds`, `todos`, `news_feeds`, in `db/schema.sql`). Plain `postgres` client, no ORM — add one if the schema grows past a few simple tables.
