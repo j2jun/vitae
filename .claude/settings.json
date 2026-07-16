@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -f tsconfig.tsbuildinfo)",
+      "Bash(rm -f /Users/jjun/.claude/jobs/67e10647/tmp/pw/test.html /Users/jjun/.claude/jobs/67e10647/tmp/pw/test.png /Users/jjun/.claude/jobs/67e10647/tmp/pw/globals.css /Users/jjun/.claude/jobs/67e10647/tmp/pw/shot2.mjs)"
+    ]
+  }
+}

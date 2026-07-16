@@ -5,6 +5,7 @@ import {
   SignOutButton,
   UserButton,
 } from "@clerk/nextjs";
+import "./globals.css";
 
 export default function RootLayout({
   children,
@@ -16,13 +17,16 @@ export default function RootLayout({
       <html lang="en">
         <body>
           <header>
-            <Show when="signed-out">
-              <SignInButton />
-            </Show>
-            <Show when="signed-in">
-              <UserButton />
-              <SignOutButton />
-            </Show>
+            <h1>vitae</h1>
+            <div className="auth-controls">
+              <Show when="signed-out">
+                <SignInButton />
+              </Show>
+              <Show when="signed-in">
+                <UserButton />
+                <SignOutButton />
+              </Show>
+            </div>
           </header>
           {children}
         </body>
