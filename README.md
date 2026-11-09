@@ -1,6 +1,19 @@
 # vitae
 
-AI daily-checkup platform — auto-detects location and time, then surfaces weather, news, stocks, traffic, health, calendar, and to-dos in one live-updating dashboard. Desktop web first (PWA), with a path to Android/iOS via Capacitor.
+AI daily-checkup dashboard — auto-detects your location and time, then pulls weather, calendar, to-dos, news, traffic, and stocks into one page, topped by a short Claude-written briefing of your day.
+
+## Status
+
+Working:
+- Today briefing (Claude summarizes every module below)
+- Weather + forecast (any location) and severe-weather alerts (US only), in-app and as Web Push notifications
+- Calendar (any ICS feed), to-dos, news (any RSS/Atom feed), commute traffic, stock watchlist — per signed-in user
+
+Planned:
+- Health module (data source not decided yet)
+- Weather alerts outside the US
+- Installable PWA, then Android/iOS via Capacitor
+- Auto-refresh (cards currently load once per page view)
 
 ## Stack
 
@@ -10,7 +23,7 @@ AI daily-checkup platform — auto-detects location and time, then surfaces weat
 - US National Weather Service (`api.weather.gov`, free, no key) for severe weather alerts — US only for now
 - OpenStreetMap Nominatim for reverse geocoding (lat/lon → city + country code, used to pick the alert source)
 - Clerk for auth
-- Postgres (`postgres` client, no ORM yet — one table so far) for per-user data
+- Postgres (`postgres` client, no ORM) for per-user data
 - Web Push (VAPID, browser-native — no third-party push vendor) for alert notifications
 - `node-ical` for reading the user's calendar feed, including recurring-event (RRULE) expansion
 - `rss-parser` for reading the user's news feed (any RSS/Atom URL — no news API account needed)
