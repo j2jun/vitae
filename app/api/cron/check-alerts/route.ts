@@ -1,5 +1,5 @@
 import { sql } from "@/lib/db";
-import { fetchWeather } from "@/lib/weatherkit";
+import { fetchWeather } from "@/lib/weather";
 import { sendPush } from "@/lib/push";
 
 interface SubscriptionRow {

@@ -1,5 +1,5 @@
 import { reverseGeocode } from "@/lib/geocode";
-import { fetchWeather } from "@/lib/weatherkit";
+import { fetchWeather } from "@/lib/weather";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

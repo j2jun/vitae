@@ -6,8 +6,9 @@ AI daily-checkup platform — auto-detects location and time, then surfaces weat
 
 - Next.js (App Router) + TypeScript + React — one codebase for frontend and API routes
 - Anthropic API (`@anthropic-ai/sdk`) for the AI-generated daily briefing
-- Apple WeatherKit for current conditions, forecast, and severe weather alerts
-- OpenStreetMap Nominatim for reverse geocoding (lat/lon → country code, for WeatherKit's alert scoping)
+- Open-Meteo for current conditions and forecast (free, no key)
+- US National Weather Service (`api.weather.gov`, free, no key) for severe weather alerts — US only for now
+- OpenStreetMap Nominatim for reverse geocoding (lat/lon → city + country code, used to pick the alert source)
 - Clerk for auth
 - Postgres (`postgres` client, no ORM yet — one table so far) for per-user data
 - Web Push (VAPID, browser-native — no third-party push vendor) for alert notifications
@@ -26,10 +27,7 @@ npm run dev
 
 `ANTHROPIC_API_KEY` — from the Anthropic Console.
 
-`APPLE_WEATHERKIT_*` — requires an Apple Developer Program membership:
-1. Register a Services ID with the WeatherKit capability enabled.
-2. Create a WeatherKit key and download its `.p8` private key.
-3. Fill in `APPLE_WEATHERKIT_TEAM_ID`, `APPLE_WEATHERKIT_SERVICE_ID`, `APPLE_WEATHERKIT_KEY_ID`, and paste the `.p8` contents into `APPLE_WEATHERKIT_PRIVATE_KEY`.
+Weather needs no setup: Open-Meteo and the NWS are keyless.
 
 `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` — sign up at clerk.com and copy from an application's API Keys page. Not required for local dev: Clerk runs in "keyless mode" without them and prints a one-click link in the terminal to claim real keys when you're ready.
 
@@ -48,7 +46,7 @@ npm run dev
 | Route | Status | Notes |
 |---|---|---|
 | `POST /api/briefing` | done | Turns fetched module data (weather, calendar, to-dos, news, traffic, stocks) into a short natural-language summary via Claude. Shown as the "Today" card at the top of the dashboard (`components/BriefingCheckup.tsx`). |
-| `GET /api/weather` | done | `?lat=&lon=&timezone=` → current conditions, forecast, and active severe weather alerts (heat, storm, winter/ice, tornado/hurricane, fire) via WeatherKit. |
+| `GET /api/weather` | done | `?lat=&lon=&timezone=` → current conditions, forecast, and active severe weather alerts (heat, storm, winter/ice, tornado/hurricane, fire) via Open-Meteo + NWS (alerts US-only). |
 | `POST /api/push/subscribe` | done | Saves a browser's push subscription + location, signed-in only. `DELETE` removes it. |
 | `GET /api/cron/check-alerts` | done | Cron-only (checked via `CRON_SECRET`). Re-checks every saved location and pushes any alert it hasn't sent before; drops subscriptions the push service reports as gone. |
 | `GET /api/calendar` | done | Signed-in only. Fetches the user's saved ICS feed URL, returns events (recurring events expanded) in the next 14 days. |
