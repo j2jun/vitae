@@ -6,7 +6,8 @@ interface BriefingRequest {
   location: { city?: string; lat: number; lon: number };
   time: { iso: string; timezone: string };
   weather?: unknown;
-  air?: unknown;
+  calendar?: unknown;
+  todos?: unknown;
   news?: unknown;
   stocks?: unknown;
   traffic?: unknown;
@@ -24,8 +25,11 @@ export async function POST(req: Request) {
 
   let response;
   try {
-    response = await anthropic.messages.create({
-      model: "claude-opus-4-8",
+    response = await anthropic.beta.messages.create({
+      model: "claude-opus-5-5",
+      // Re-runs on the fallback model if a safety classifier declines.
+      betas: ["server-side-fallback-2026-06-01"],
+      fallbacks: [{ model: "claude-opus-4-8" }],
       max_tokens: 500,
       output_config: { effort: "low" },
       system:

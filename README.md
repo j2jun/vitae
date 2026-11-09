@@ -47,7 +47,7 @@ npm run dev
 
 | Route | Status | Notes |
 |---|---|---|
-| `POST /api/briefing` | done | Turns fetched module data (weather, news, stocks, etc.) into a short natural-language summary via Claude. |
+| `POST /api/briefing` | done | Turns fetched module data (weather, calendar, to-dos, news, traffic, stocks) into a short natural-language summary via Claude. Shown as the "Today" card at the top of the dashboard (`components/BriefingCheckup.tsx`). |
 | `GET /api/weather` | done | `?lat=&lon=&timezone=` → current conditions, forecast, and active severe weather alerts (heat, storm, winter/ice, tornado/hurricane, fire) via WeatherKit. |
 | `POST /api/push/subscribe` | done | Saves a browser's push subscription + location, signed-in only. `DELETE` removes it. |
 | `GET /api/cron/check-alerts` | done | Cron-only (checked via `CRON_SECRET`). Re-checks every saved location and pushes any alert it hasn't sent before; drops subscriptions the push service reports as gone. |

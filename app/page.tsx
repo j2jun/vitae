@@ -1,4 +1,5 @@
 import { Show } from "@clerk/nextjs";
+import BriefingCheckup from "@/components/BriefingCheckup";
 import WeatherCheckup from "@/components/WeatherCheckup";
 import PushSubscribe from "@/components/PushSubscribe";
 import CalendarCheckup from "@/components/CalendarCheckup";
@@ -10,6 +11,10 @@ import StockWatchlist from "@/components/StockWatchlist";
 export default function Home() {
   return (
     <main className="dashboard">
+      <section className="card briefing-card">
+        <h2>Today</h2>
+        <BriefingCheckup />
+      </section>
       <section className="card">
         <h2>Weather</h2>
         <WeatherCheckup />
