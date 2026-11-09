@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { weatherEffect } from "@/lib/ambience";
 
 interface WeatherAlert {
   id: string;
@@ -70,6 +71,7 @@ export default function WeatherCheckup() {
         }
 
         setWeather(data);
+        document.documentElement.dataset.weather = weatherEffect(data.current.conditionCode);
         const seen = getSeenAlertIds();
         setNewAlerts(data.alerts.filter((a) => !seen.has(a.id)));
       },

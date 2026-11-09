@@ -132,7 +132,7 @@ button {
   font: inherit;
 }
 
-input:not([type="checkbox"]) {
+input:not([type="checkbox"]):not([type="radio"]) {
   flex: 1;
   min-width: 0;
   padding: 0.5rem 0.75rem;
@@ -181,4 +181,200 @@ button:disabled {
 
 .card p.briefing {
   color: var(--text);
+}
+
+/* ===================== Ambience: themes × time of day × effects =====================
+   <html> carries data-skin (sky|pulse|aurora), data-phase (dawn|day|golden|night),
+   data-fx (off|subtle|lively), data-wxfx (on|off) and data-weather (set by the
+   Weather card). Everything below keys off those attributes. */
+
+html { background: #0f1115; --slow: 1; }
+html[data-fx="subtle"] { --slow: 2.2; }
+html[data-skin] body { background: transparent; }
+
+.ambience { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; transition: background 2s; }
+.ambience > div { position: absolute; inset: 0; display: none; }
+.ambience i { position: absolute; display: block; }
+
+.card, header { transition: background 1s, border-color 1s, color 1s; }
+
+/* ---------- Living sky ---------- */
+[data-skin="sky"] {
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --text: #1a1d23;
+  --text-muted: #4b5563;
+  --border: rgba(255, 255, 255, 0.55);
+  --bg: rgba(255, 255, 255, 0.7);
+  --accent: #2563eb;
+  --accent-text: #ffffff;
+}
+[data-skin="sky"][data-phase="night"] {
+  --card-bg: rgba(14, 18, 48, 0.72);
+  --text: #eef0ff;
+  --text-muted: #b4b9e0;
+  --border: rgba(255, 255, 255, 0.14);
+  --bg: rgba(255, 255, 255, 0.08);
+  --accent: #8ea2ff;
+  --accent-text: #0b0d26;
+}
+[data-skin="sky"][data-phase="dawn"] .ambience { background: linear-gradient(180deg, #ff9a8b, #ffc3a0 50%, #ffe6b8); }
+[data-skin="sky"][data-phase="day"] .ambience { background: linear-gradient(180deg, #3d8bff, #8cc8ff 60%, #d8efff); }
+[data-skin="sky"][data-phase="golden"] .ambience { background: linear-gradient(180deg, #ff6a4d, #ff9f5a 50%, #ffd27a); }
+[data-skin="sky"][data-phase="night"] .ambience { background: linear-gradient(180deg, #070b26, #18205a 60%, #2f2a6e); }
+[data-skin="sky"][data-phase="day"]:is([data-weather="rain"], [data-weather="storm"], [data-weather="snow"]) .ambience {
+  background: linear-gradient(180deg, #56657c, #8d9db3 60%, #c3ccd8);
+}
+[data-skin="sky"] :is(.card, header) { backdrop-filter: blur(8px); }
+
+/* ---------- Energy pulse ---------- */
+[data-skin="pulse"] {
+  --card-bg: #1a1d24;
+  --text: #f2f4f8;
+  --text-muted: #a0a7b4;
+  --border: #2a2f3a;
+  --bg: #12141a;
+  --accent-text: #0b0d10;
+}
+[data-skin="pulse"][data-phase="dawn"] { --accent: #ff8a3d; }
+[data-skin="pulse"][data-phase="day"] { --accent: #14d3b5; }
+[data-skin="pulse"][data-phase="golden"] { --accent: #ff4f7b; }
+[data-skin="pulse"][data-phase="night"] { --accent: #a35cff; }
+[data-skin="pulse"] .ambience {
+  background: radial-gradient(ellipse at 50% -10%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 60%), #0f1115;
+}
+[data-skin="pulse"] .card {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  animation: pop 0.5s both, glow calc(3s * var(--slow)) ease-in-out infinite alternate;
+}
+[data-skin="pulse"] .card h2 { color: var(--accent); }
+.dashboard .card:nth-child(2) { animation-delay: 60ms, 0s; }
+.dashboard .card:nth-child(3) { animation-delay: 120ms, 0s; }
+.dashboard .card:nth-child(4) { animation-delay: 180ms, 0s; }
+.dashboard .card:nth-child(5) { animation-delay: 240ms, 0s; }
+.dashboard .card:nth-child(6) { animation-delay: 300ms, 0s; }
+.dashboard .card:nth-child(n + 7) { animation-delay: 360ms, 0s; }
+@keyframes pop { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@keyframes glow {
+  from { box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 12%, transparent); }
+  to { box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 32%, transparent); }
+}
+
+/* ---------- Aurora glass ---------- */
+[data-skin="aurora"] {
+  --card-bg: rgba(14, 18, 40, 0.45);
+  --text: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.75);
+  --border: rgba(255, 255, 255, 0.2);
+  --bg: rgba(255, 255, 255, 0.08);
+  --accent: rgba(255, 255, 255, 0.92);
+  --accent-text: #0c1022;
+}
+[data-skin="aurora"][data-phase="dawn"] { --b1: #ff7eb3; --b2: #ffb36b; --b3: #ffd86b; }
+[data-skin="aurora"][data-phase="day"] { --b1: #4ad7ff; --b2: #6bffb8; --b3: #7e8bff; }
+[data-skin="aurora"][data-phase="golden"] { --b1: #ff6f61; --b2: #ffb347; --b3: #ff6fb5; }
+[data-skin="aurora"][data-phase="night"] { --b1: #5b4bff; --b2: #2ad4c8; --b3: #b44bff; }
+[data-skin="aurora"] .ambience { background: #0c1022; }
+[data-skin="aurora"] .blobs { display: block; }
+.blobs b {
+  position: absolute; width: 55vmax; height: 55vmax; border-radius: 50%;
+  filter: blur(80px); opacity: 0.45; transition: background 2s;
+  animation: drift calc(18s * var(--slow)) ease-in-out infinite alternate;
+}
+.blobs b:nth-child(1) { background: var(--b1); top: -20vmax; left: -15vmax; }
+.blobs b:nth-child(2) { background: var(--b2); bottom: -25vmax; right: -15vmax; animation-delay: -6s; }
+.blobs b:nth-child(3) { background: var(--b3); top: 20vh; left: 35vw; width: 35vmax; height: 35vmax; animation-delay: -12s; }
+@keyframes drift { to { transform: translate(12vw, 8vh) scale(1.2); } }
+[data-skin="aurora"] :is(.card, header) { backdrop-filter: blur(18px) saturate(140%); }
+
+/* ---------- Night stars (sky + aurora) ---------- */
+[data-phase="night"]:is([data-skin="sky"], [data-skin="aurora"]) .stars { display: block; }
+.stars i {
+  width: 2px; height: 2px; border-radius: 50%; background: #fff;
+  animation: twinkle calc(var(--d) * var(--slow)) ease-in-out infinite alternate;
+}
+.stars i:nth-child(3n) { width: 3px; height: 3px; }
+@keyframes twinkle { from { opacity: 0.15; } to { opacity: 0.9; } }
+
+/* ---------- Weather effects ---------- */
+[data-wxfx="on"][data-weather="clear"]:not([data-phase="night"]) .sun {
+  display: block;
+  background: radial-gradient(circle at 88% 8%, rgba(255, 236, 170, 0.8), rgba(255, 210, 120, 0.25) 18%, transparent 40%);
+  animation: sunpulse calc(6s * var(--slow)) ease-in-out infinite alternate;
+}
+@keyframes sunpulse { to { opacity: 0.65; transform: scale(1.05); } }
+
+[data-wxfx="on"]:is([data-weather="rain"], [data-weather="storm"]) .rain { display: block; }
+.rain i {
+  top: -30px; width: 1.5px; height: 20px;
+  background: linear-gradient(transparent, rgba(210, 225, 255, 0.75));
+  animation: fall calc(var(--d) * var(--slow)) linear infinite;
+}
+@keyframes fall { to { transform: translate(-40px, 110vh); } }
+
+[data-wxfx="on"][data-weather="snow"] .snow { display: block; }
+.snow i {
+  top: -10px; width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.9);
+  animation: snowfall calc(var(--d) * var(--slow)) linear infinite;
+}
+.snow i:nth-child(2n) { width: 4px; height: 4px; }
+@keyframes snowfall {
+  33% { transform: translate(18px, 36vh); }
+  66% { transform: translate(-14px, 72vh); }
+  to { transform: translate(10px, 108vh); }
+}
+
+[data-wxfx="on"][data-weather="storm"] .flash { display: block; background: #fff; opacity: 0; animation: flash calc(9s * var(--slow)) infinite; }
+@keyframes flash { 0%, 90%, 92.5%, 95%, 100% { opacity: 0; } 91% { opacity: 0.45; } 94% { opacity: 0.3; } }
+
+/* Subtle = slower (via --slow) and sparser. */
+[data-fx="subtle"] .rain i:nth-child(n + 26),
+[data-fx="subtle"] .snow i:nth-child(n + 20) { display: none; }
+[data-fx="subtle"][data-skin="pulse"] .card { animation: pop 0.5s both; }
+
+/* Off = still colors only. */
+[data-fx="off"] :is(.rain, .snow, .flash) { display: none !important; }
+[data-fx="off"] .ambience *,
+[data-fx="off"] .card { animation: none !important; }
+
+/* ---------- Theme picker ---------- */
+header { position: relative; z-index: 5; } /* keep the theme panel above cards (their blur/animation creates stacking contexts) */
+.theme-picker { position: relative; }
+.theme-picker summary {
+  list-style: none; cursor: pointer; padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border); border-radius: 999px; color: var(--text); background: var(--card-bg);
+}
+.theme-picker summary::-webkit-details-marker { display: none; }
+.theme-picker summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-panel {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 10; width: min(300px, calc(100vw - 2rem));
+  display: flex; flex-direction: column; gap: 0.9rem; padding: 1rem;
+  background: var(--card-bg); color: var(--text); border: 1px solid var(--border); border-radius: 12px;
+  backdrop-filter: blur(24px); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+.theme-panel fieldset { border: 0; margin: 0; padding: 0; }
+.theme-panel legend { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.4rem; }
+.theme-panel input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.theme-panel label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.skin-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+.skin-options label {
+  display: flex; flex-direction: column; gap: 0.35rem; align-items: center; text-align: center;
+  font-size: 0.75rem; cursor: pointer; padding: 0.35rem; border-radius: 10px; border: 2px solid transparent;
+}
+.skin-options label:has(input:checked) { border-color: var(--accent); }
+.swatch { width: 100%; height: 44px; border-radius: 8px; background-size: 200% 200%; animation: swatch 6s ease-in-out infinite alternate; }
+.swatch-sky { background-image: linear-gradient(135deg, #ff9a8b, #3d8bff, #ff9f5a, #18205a); }
+.swatch-pulse { background-image: linear-gradient(135deg, #0f1115 40%, #ff8a3d, #14d3b5, #a35cff); }
+.swatch-aurora { background-image: radial-gradient(circle at 30% 30%, #ff6fb5, transparent 50%), radial-gradient(circle at 70% 70%, #4ad7ff, transparent 50%), linear-gradient(#0c1022, #0c1022); }
+@keyframes swatch { to { background-position: 100% 100%; } }
+[data-fx="off"] .swatch { animation: none; }
+
+.segmented { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.segmented label { flex: 1; text-align: center; padding: 0.35rem 0; cursor: pointer; font-size: 0.85rem; }
+.segmented label:has(input:checked) { background: var(--accent); color: var(--accent-text); }
+.switch { display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; cursor: pointer; }
+
+@media (max-width: 480px) {
+  header { padding: 0.75rem 1rem; }
+  main.dashboard { padding: 1rem; grid-template-columns: 1fr; }
 }
