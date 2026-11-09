@@ -8,12 +8,21 @@ Working:
 - Today briefing summarizing every module below: written by Claude if `ANTHROPIC_API_KEY` is set, otherwise a plain built-in summary (free, no key)
 - Weather + forecast (any location) and severe-weather alerts (US only), in-app and as Web Push notifications
 - Calendar (any ICS feed), to-dos, news (any RSS/Atom feed), commute traffic, stock watchlist — per signed-in user
+- Theme picker: three looks that follow the time of day and show your real weather (rain, snow, storms, sun), with adjustable effects
 
 Planned:
 - Health module (data source not decided yet)
 - Weather alerts outside the US
 - Installable PWA, then Android/iOS via Capacitor
 - Auto-refresh (cards currently load once per page view)
+
+## Themes
+
+Pick a look from the **Theme** button in the header. Each shifts through dawn, day, golden hour and night on your local clock and shows your real weather. Effects can be set to Off, Subtle or Lively (Off by default if your system has "reduce motion" on), and weather effects can be switched off on their own. The choice is saved in your browser.
+
+| Living sky (golden hour, clear) | Energy pulse (afternoon, rain) | Aurora glass (night, snow) |
+|---|---|---|
+| ![Living sky theme](docs/screenshots/living-sky.png) | ![Energy pulse theme](docs/screenshots/energy-pulse.png) | ![Aurora glass theme](docs/screenshots/aurora-glass.png) |
 
 ## Stack
 
