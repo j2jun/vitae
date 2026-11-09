@@ -5,7 +5,7 @@ AI daily-checkup dashboard — auto-detects your location and time, then pulls w
 ## Status
 
 Working:
-- Today briefing (Claude summarizes every module below)
+- Today briefing summarizing every module below: written by Claude if `ANTHROPIC_API_KEY` is set, otherwise a plain built-in summary (free, no key)
 - Weather + forecast (any location) and severe-weather alerts (US only), in-app and as Web Push notifications
 - Calendar (any ICS feed), to-dos, news (any RSS/Atom feed), commute traffic, stock watchlist — per signed-in user
 
@@ -38,7 +38,7 @@ cp .env.example .env.local   # fill in the values below
 npm run dev
 ```
 
-`ANTHROPIC_API_KEY` — from the Anthropic Console.
+`ANTHROPIC_API_KEY` — optional, from the Anthropic Console (pay-as-you-go). Without it, or if the Claude call fails, the Today card uses the built-in summary in `lib/briefing.ts`.
 
 Weather needs no setup: Open-Meteo and the NWS are keyless.
 
@@ -58,7 +58,7 @@ Weather needs no setup: Open-Meteo and the NWS are keyless.
 
 | Route | Status | Notes |
 |---|---|---|
-| `POST /api/briefing` | done | Turns fetched module data (weather, calendar, to-dos, news, traffic, stocks) into a short natural-language summary via Claude. Shown as the "Today" card at the top of the dashboard (`components/BriefingCheckup.tsx`). |
+| `POST /api/briefing` | done | Turns fetched module data (weather, calendar, to-dos, news, traffic, stocks) into a short natural-language summary: Claude when a key is set, the built-in template otherwise (`source` in the response says which). Shown as the "Today" card at the top of the dashboard (`components/BriefingCheckup.tsx`). |
 | `GET /api/weather` | done | `?lat=&lon=&timezone=` → current conditions, forecast, and active severe weather alerts (heat, storm, winter/ice, tornado/hurricane, fire) via Open-Meteo + NWS (alerts US-only). |
 | `POST /api/push/subscribe` | done | Saves a browser's push subscription + location, signed-in only. `DELETE` removes it. |
 | `GET /api/cron/check-alerts` | done | Cron-only (checked via `CRON_SECRET`). Re-checks every saved location and pushes any alert it hasn't sent before; drops subscriptions the push service reports as gone. |

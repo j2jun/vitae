@@ -1,16 +1,31 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { templateBriefing, type BriefingInput } from "@/lib/briefing";
 
-const anthropic = new Anthropic();
-
-interface BriefingRequest {
+type BriefingRequest = BriefingInput & {
   location: { city?: string; lat: number; lon: number };
-  time: { iso: string; timezone: string };
-  weather?: unknown;
-  calendar?: unknown;
-  todos?: unknown;
-  news?: unknown;
-  stocks?: unknown;
-  traffic?: unknown;
+};
+
+// Returns Claude's summary, or null if Claude can't be used (no key, API error, refusal).
+async function claudeBriefing(body: BriefingRequest): Promise<string | null> {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  try {
+    const response = await new Anthropic().beta.messages.create({
+      model: "claude-opus-5-5",
+      // Re-runs on the fallback model if a safety classifier declines.
+      betas: ["server-side-fallback-2026-06-01"],
+      fallbacks: [{ model: "claude-opus-4-8" }],
+      max_tokens: 500,
+      output_config: { effort: "low" },
+      system:
+        "Write a short daily-briefing paragraph (3-5 sentences) from the structured checkup data given. " +
+        "Be direct and factual, no greeting, no preamble like 'Here is your briefing'. Skip any field that's missing or empty.",
+      messages: [{ role: "user", content: JSON.stringify(body) }],
+    });
+    if (response.stop_reason === "refusal") return null;
+    return response.content.find((b) => b.type === "text")?.text || null;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(req: Request) {
@@ -23,28 +38,6 @@ export async function POST(req: Request) {
     );
   }
 
-  let response;
-  try {
-    response = await anthropic.beta.messages.create({
-      model: "claude-opus-5-5",
-      // Re-runs on the fallback model if a safety classifier declines.
-      betas: ["server-side-fallback-2026-06-01"],
-      fallbacks: [{ model: "claude-opus-4-8" }],
-      max_tokens: 500,
-      output_config: { effort: "low" },
-      system:
-        "Write a short daily-briefing paragraph (3-5 sentences) from the structured checkup data given. " +
-        "Be direct and factual, no greeting, no preamble like 'Here is your briefing'. Skip any field that's missing or empty.",
-      messages: [{ role: "user", content: JSON.stringify(body) }],
-    });
-  } catch {
-    return Response.json({ error: "briefing generation failed" }, { status: 502 });
-  }
-
-  if (response.stop_reason === "refusal") {
-    return Response.json({ error: "briefing declined" }, { status: 502 });
-  }
-
-  const summary = response.content.find((b) => b.type === "text")?.text ?? "";
-  return Response.json({ summary });
+  const ai = await claudeBriefing(body as BriefingRequest);
+  return Response.json({ summary: ai ?? templateBriefing(body as BriefingRequest), source: ai ? "claude" : "template" });
 }
